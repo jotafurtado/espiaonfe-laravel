@@ -37,7 +37,7 @@ ESPIAONFE_BASE_URI=https://api.espiaonfe.com.br
 
 O pacote fornece uma **API fluente estilo Laravel** que torna o uso extremamente elegante e intuitivo:
 
-### API Fluente (Recomendado) ✨
+### API Fluente ✨
 
 O pacote utiliza query builders que permitem encadear métodos de forma fluente, similar ao Eloquent do Laravel:
 
@@ -183,59 +183,6 @@ $logs = EspiaoNfe::logs()
     ->get();
 ```
 
-### Métodos Legados (Compatibilidade)
-
-Os métodos antigos ainda estão disponíveis para compatibilidade:
-
-```php
-$certificados = EspiaoNfe::getCertificados();
-$empresas = EspiaoNfe::getEmpresas(['pagina' => 1]);
-$xml = EspiaoNfe::getXmlByChave(['chave' => '...']);
-```
-
-## Métodos Disponíveis
-
-O pacote implementa todos os endpoints da API EspiaOnfe:
-
-### Certificados
-- `getCertificados()` - Lista todos os certificados
-- `createCertificado(array $data)` - Cria um novo certificado
-- `updateCertificado(string $serial, array $data)` - Atualiza um certificado
-- `deleteCertificado(string $serial, string $comando)` - Remove um certificado
-
-### Empresas
-- `getEmpresas(array $params = [])` - Lista empresas
-- `createEmpresa(array $data)` - Cria uma nova empresa
-- `getEmpresa(array $params)` - Obtém dados de uma empresa específica
-- `updateEmpresa(string $cnpjCpf, array $data)` - Atualiza uma empresa
-
-### Notas Fiscais (NF-e)
-- `getNfeResumo(array $params)` - Obtém resumo de NF-e
-- `manifestarNfe(array $data)` - Manifesta uma NF-e
-
-### Conhecimentos de Transporte (CT-e)
-- `getCteResumo(array $params)` - Obtém resumo de CT-e
-- `desacordoCte(array $data)` - Registra desacordo de CT-e
-
-### Notas Fiscais de Serviços (NFSe)
-- `getNfseResumo(array $params)` - Obtém resumo de NFSe
-- `consultarNfsePorCidade(array $params)` - Consulta NFSe por cidade
-- `getCidadesHomologadas()` - Lista cidades homologadas
-
-### XMLs e PDFs
-- `getXmls(array $params)` - Lista XMLs
-- `getXmlByChave(array $params)` - Obtém XML por chave
-- `getPdfByChave(array $params)` - Obtém PDF por chave
-- `importarXml(array $data)` - Importa um XML
-
-### Logs
-- `getLogs(array $params)` - Obtém logs do sistema
-
-### Resgate de XML
-- `inserirChavesResgateXml(array $data)` - Insere chaves para resgate de XML
-- `consultarAndamentoResgateXml(array $params)` - Consulta andamento do resgate
-- `consultarResgatados(array $params)` - Consulta XMLs resgatados
-
 ## Testes
 
 Execute os testes do pacote usando PHPUnit:
@@ -256,15 +203,6 @@ vendor/bin/phpunit --testsuite=Feature
 
 Veja o [CHANGELOG](CHANGELOG.md) para obter informações sobre mudanças recentes.
 
-## Contribuindo
-
-Contribuições são bem-vindas! Por favor, leia o [Guia de Contribuição](CONTRIBUTING.md) antes de enviar pull requests.
-
-## Créditos
-
-- [João C. Furtado](https://github.com/seu-usuario)
-
 ## Licença
 
 Este pacote é de código aberto e está licenciado sob a [Licença MIT](LICENSE.md).
-

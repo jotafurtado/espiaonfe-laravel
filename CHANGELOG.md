@@ -12,7 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial development release
 - Integration with EspiãoNFe API
-- Fluent API for all endpoints
+- Fluent API for all endpoints (query builders)
+- Clean API design without legacy methods
 - Support for Certificados (Certificates)
 - Support for Empresas (Companies)
 - Support for NF-e (Electronic Invoice)
