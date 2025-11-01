@@ -1,0 +1,62 @@
+{
+    "name": "jcf/espiaonfe",
+    "description": "Pacote Laravel para integração com a API do EspiãoNFe - Gerenciamento de certificados digitais, NF-e, CT-e, NFSe e XMLs",
+    "keywords": [
+        "laravel",
+        "espiaonfe",
+        "nfe",
+        "nf-e",
+        "cte",
+        "ct-e",
+        "nfse",
+        "xml",
+        "sefaz",
+        "certificado-digital",
+        "nota-fiscal",
+        "api"
+    ],
+    "homepage": "https://github.com/jotacfurtado/espiaonfe-laravel",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "João C. Furtado",
+            "email": "jotacfurtado@gmail.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/jotacfurtado/espiaonfe-laravel/issues",
+        "source": "https://github.com/jotacfurtado/espiaonfe-laravel"
+    },
+    "require": {
+        "php": "^8.1",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "illuminate/http": "^10.0|^11.0|^12.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0|^9.0|^10.0",
+        "phpunit/phpunit": "^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jcf\\EspiaoNfe\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Jcf\\EspiaoNfe\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Jcf\\EspiaoNfe\\Providers\\EspiaoNfeServiceProvider"
+            ],
+            "aliases": {
+                "EspiaoNfe": "Jcf\\EspiaoNfe\\Facades\\EspiaoNfe"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
