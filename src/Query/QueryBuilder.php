@@ -15,7 +15,7 @@ abstract class QueryBuilder
 
     public function __construct(
         protected PendingRequest $http,
-        protected string $endpoint
+        protected string $endpoint,
     ) {}
 
     /**
@@ -39,19 +39,12 @@ abstract class QueryBuilder
     }
 
     /**
-     * Define o número da página para paginação.
+     * Define o código da próxima página para paginação.
+     * A API retorna este código no campo "codigoProximaPagina".
      */
-    public function pagina(int|string $pagina): static
+    public function codigoProximaPagina(string $codigo): static
     {
-        return $this->where('pagina', $pagina);
-    }
-
-    /**
-     * Define o limite de registros por página.
-     */
-    public function limite(int $limite): static
-    {
-        return $this->where('limite', $limite);
+        return $this->where("codigoProximaPagina", $codigo);
     }
 
     /**
@@ -92,7 +85,7 @@ abstract class QueryBuilder
     public function create(array $data = []): array
     {
         $uri = $this->buildUri();
-        $payload = ! empty($data) ? $data : $this->data;
+        $payload = !empty($data) ? $data : $this->data;
 
         $response = $this->http->post($uri, $payload);
 
@@ -104,12 +97,14 @@ abstract class QueryBuilder
      */
     public function update(array $data = []): array
     {
-        if (! $this->resourceId) {
-            throw new EspiaoNfeException('É necessário informar o ID do recurso para atualização.');
+        if (!$this->resourceId) {
+            throw new EspiaoNfeException(
+                "É necessário informar o ID do recurso para atualização.",
+            );
         }
 
         $uri = $this->buildUri();
-        $payload = ! empty($data) ? $data : $this->data;
+        $payload = !empty($data) ? $data : $this->data;
 
         $response = $this->http->put($uri, $payload);
 
@@ -121,12 +116,14 @@ abstract class QueryBuilder
      */
     public function delete(array $data = []): array
     {
-        if (! $this->resourceId) {
-            throw new EspiaoNfeException('É necessário informar o ID do recurso para exclusão.');
+        if (!$this->resourceId) {
+            throw new EspiaoNfeException(
+                "É necessário informar o ID do recurso para exclusão.",
+            );
         }
 
         $uri = $this->buildUri();
-        $payload = ! empty($data) ? $data : $this->data;
+        $payload = !empty($data) ? $data : $this->data;
 
         $response = $this->http->delete($uri, $payload);
 
@@ -141,7 +138,7 @@ abstract class QueryBuilder
         $uri = $this->endpoint;
 
         if ($this->resourceId) {
-            $uri .= '/'.$this->resourceId;
+            $uri .= "/" . $this->resourceId;
         }
 
         return $uri;
@@ -156,7 +153,7 @@ abstract class QueryBuilder
     {
         if ($response->failed()) {
             throw new EspiaoNfeException(
-                "Erro na requisição: {$response->body()}. Status: {$response->status()}."
+                "Erro na requisição: {$response->body()}. Status: {$response->status()}.",
             );
         }
 

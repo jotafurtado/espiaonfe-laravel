@@ -46,14 +46,16 @@ O pacote utiliza query builders que permitem encadear métodos de forma fluente,
 ```php
 use Jcf\EspiaoNfe\Facades\EspiaoNfe;
 
-// Listar todas as empresas
+// Listar empresas (limite de 100 por página)
 $empresas = EspiaoNfe::empresas()->get();
 
-// Com paginação
-$empresas = EspiaoNfe::empresas()
-    ->pagina(1)
-    ->limite(10)
-    ->get();
+// Navegar para próxima página usando o código retornado
+$codigoProxima = $empresas['codigoProximaPagina']; // Ex: "200"
+if ($codigoProxima !== '-1') {
+    $empresas = EspiaoNfe::empresas()
+        ->codigoProximaPagina($codigoProxima)
+        ->get();
+}
 
 // Filtrar por CNPJ/CPF
 $empresa = EspiaoNfe::empresas()

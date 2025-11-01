@@ -14,30 +14,31 @@ class ClientTest extends TestCase
     public function test_it_can_get_certificados(): void
     {
         $fakeResponse = [
-            'data' => [
+            "data" => [
                 [
-                    'serial' => '123456789',
-                    'nome' => 'Certificado Teste',
-                    'valido' => true,
+                    "serial" => "123456789",
+                    "nome" => "Certificado Teste",
+                    "valido" => true,
                 ],
             ],
         ];
 
         Http::fake([
-            'api.test.com/*' => Http::response($fakeResponse, 200),
+            "api.test.com/*" => Http::response($fakeResponse, 200),
         ]);
 
-        config(['espiaonfe.base_uri' => 'https://api.test.com']);
+        config(["espiaonfe.base_uri" => "https://api.test.com"]);
 
-        $this->app->forgetInstance('espiaonfe');
+        $this->app->forgetInstance("espiaonfe");
 
         $response = EspiaoNfe::certificados()->get();
 
         $this->assertEquals($fakeResponse, $response);
 
         Http::assertSent(function ($request) {
-            return $request->url() === 'https://api.test.com/v1-cloud/certificados'
-                && $request->method() === 'GET';
+            return $request->url() ===
+                "https://api.test.com/v1-cloud/certificados" &&
+                $request->method() === "GET";
         });
     }
 
@@ -47,28 +48,30 @@ class ClientTest extends TestCase
     public function test_it_can_get_empresas_with_pagination(): void
     {
         $fakeResponse = [
-            'data' => [
-                ['cnpj' => '12345678000190', 'razao_social' => 'Empresa Teste'],
+            "dados" => [
+                [
+                    "cnpjCpf" => "12345678000190",
+                    "razaoSocial" => "Empresa Teste",
+                ],
             ],
-            'pagina' => 1,
+            "codigoProximaPagina" => "200",
         ];
 
         Http::fake([
-            'api.test.com/*' => Http::response($fakeResponse, 200),
+            "api.test.com/*" => Http::response($fakeResponse, 200),
         ]);
 
-        config(['espiaonfe.base_uri' => 'https://api.test.com']);
+        config(["espiaonfe.base_uri" => "https://api.test.com"]);
 
-        $this->app->forgetInstance('espiaonfe');
+        $this->app->forgetInstance("espiaonfe");
 
-        $response = EspiaoNfe::empresas()->pagina(1)->limite(10)->get();
+        $response = EspiaoNfe::empresas()->codigoProximaPagina("200")->get();
 
         $this->assertEquals($fakeResponse, $response);
 
         Http::assertSent(function ($request) {
-            return str_contains($request->url(), 'pagina=1')
-                && str_contains($request->url(), 'limite=10')
-                && $request->method() === 'GET';
+            return str_contains($request->url(), "codigoProximaPagina=200") &&
+                $request->method() === "GET";
         });
     }
 }

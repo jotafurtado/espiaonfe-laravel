@@ -26,16 +26,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive test suite (Unit and Feature tests)
 - Configuration file with environment variables support
 - Complete documentation in README
+- Pagination support using `codigoProximaPagina()` method (matches API behavior)
 
 ### Features
 - **Certificates Management**: List, create, update, and delete digital certificates
-- **Company Management**: List, create, update, and retrieve company information
+- **Company Management**: List, create, update, and retrieve company information (100 items per page)
 - **NF-e Operations**: Get summaries and manifest electronic invoices
 - **CT-e Operations**: Get summaries and register disagreements
 - **NFSe Operations**: Consult by city and list approved cities
 - **XML Management**: Import, retrieve by key, and generate PDFs
 - **XML Rescue**: Insert keys, check progress, and retrieve rescued XMLs
 - **Logging**: Retrieve system logs with filtering
+- **Smart Pagination**: Navigate through pages using API's native `codigoProximaPagina`
 
 ### Technical
 - PHP 8.1+ support
