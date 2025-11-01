@@ -77,34 +77,45 @@ $empresa = EspiaoNfe::empresas()
 #### Exemplo: Trabalhar com Certificados
 
 ```php
-// Listar certificados
+// Listar certificados (até 100 por página)
 $certificados = EspiaoNfe::certificados()->get();
 
-// Criar certificado
+// Filtrar por serial
+$certificado = EspiaoNfe::certificados()
+    ->serial('4CAF1032F8C90902C81751D30FE47152')
+    ->get();
+
+// Criar certificado (multipart/form-data - requer arquivo)
 $certificado = EspiaoNfe::certificados()->create([
-    'serial' => '123456789',
-    // ... outros campos
+    'arquivoCertificado' => /* arquivo .pfx */,
+    'senha' => 'senha_do_certificado',
 ]);
 
 // Atualizar certificado
 $certificado = EspiaoNfe::certificados()
-    ->find('123456789')
+    ->find('4CAF1032F8C90902C81751D30FE47152')
     ->update([/* dados */]);
 
 // Deletar certificado
 EspiaoNfe::certificados()
-    ->find('123456789')
+    ->find('4CAF1032F8C90902C81751D30FE47152')
     ->delete(['comando' => 'cancelar']);
 ```
 
 #### Exemplo: NF-e, CT-e e NFSe
 
 ```php
-// Resumo de NF-e com paginação
+// Consultar NF-e por período (até 100 por página)
 $nfeResumo = EspiaoNfe::nfe()
-    ->resumo()
-    ->pagina(1)
-    ->limite(20)
+    ->cnpjCpf('12345678000190')
+    ->periodo('01/01/2024', '31/01/2024')
+    ->get();
+
+// Ou usar dataInicial e dataFinal separadamente
+$nfeResumo = EspiaoNfe::nfe()
+    ->cnpjCpf('12345678000190')
+    ->dataInicial('01/01/2024')
+    ->dataFinal('31/01/2024')
     ->get();
 
 // Manifestar NF-e
@@ -113,22 +124,30 @@ $resultado = EspiaoNfe::nfe()->manifestar([
     'tipo' => '210200',
 ]);
 
-// Resumo de CT-e
+// Consultar CT-e por período (até 100 por página)
 $cteResumo = EspiaoNfe::cte()
-    ->resumo()
-    ->pagina(1)
+    ->cnpjCpf('12345678000190')
+    ->periodo('01/01/2024', '31/01/2024')
     ->get();
 
 // Desacordo de CT-e
 $resultado = EspiaoNfe::cte()->desacordo([
-    'chave' => '...',
-    'motivo' => '...',
+    'chave' => '35191234567890123456789012345678901234567890',
+    'motivo' => 'Mercadoria não recebida',
 ]);
+
+// Consultar NFSe por período (até 100 por página)
+$nfseResumo = EspiaoNfe::nfse()
+    ->cnpjCpf('12345678000190')
+    ->periodo('01/01/2024', '31/01/2024')
+    ->get();
 
 // NFSe por cidade
 $nfsePorCidade = EspiaoNfe::nfse()->porCidade([
+    'cnpjCpf' => '12345678000190',
     'cidade' => '3550308',
-    'data_inicio' => '2024-01-01',
+    'dataInicial' => '01/01/2024',
+    'dataFinal' => '31/01/2024',
 ]);
 
 // Cidades homologadas
@@ -138,9 +157,11 @@ $cidades = EspiaoNfe::nfse()->cidadesHomologadas();
 #### Exemplo: XMLs e PDFs
 
 ```php
-// Listar XMLs
+// Listar XMLs por período (até 50 por página)
 $xmls = EspiaoNfe::xmls()
-    ->pagina(1)
+    ->cnpjCpf('12345678000190')
+    ->periodo('01/01/2024', '31/01/2024')
+    ->tipoPeriodo('emissao') // ou 'inclusao'
     ->get();
 
 // Obter XML por chave
@@ -151,8 +172,8 @@ $pdf = EspiaoNfe::xmls()->pdfPorChave('35191234567890123456789012345678901234567
 
 // Importar XML
 $resultado = EspiaoNfe::xmls()->importar([
-    'xml' => '...',
-    'cnpj' => '12345678000190',
+    'xml' => '<?xml version="1.0"...',
+    'cnpjCpf' => '12345678000190',
 ]);
 ```
 
@@ -161,28 +182,56 @@ $resultado = EspiaoNfe::xmls()->importar([
 ```php
 // Inserir chaves para resgate
 $resultado = EspiaoNfe::resgateXml()->inserirChaves([
-    'chaves' => ['35191234567890123456789012345678901234567890'],
+    'cnpjCpf' => '12345678000190',
+    'chaves' => [
+        '35191234567890123456789012345678901234567890',
+        '35191234567890123456789012345678901234567891',
+    ],
 ]);
 
 // Consultar andamento
-$andamento = EspiaoNfe::resgateXml()->andamento([
-    'id' => '12345',
-]);
+$andamento = EspiaoNfe::resgateXml()->andamento(
+    '12345678000190',
+    'ID_REQUISICAO_123'
+);
 
-// Consultar resgatados
+// Consultar XMLs resgatados
 $resgatados = EspiaoNfe::resgateXml()
     ->resgatados()
-    ->pagina(1)
+    ->cnpjCpf('12345678000190')
+    ->periodo('01/01/2024', '31/01/2024')
     ->get();
+
+// Paginação
+$codigoProxima = $resgatados['codigoProximaPagina'];
+if ($codigoProxima !== '-1') {
+    $maisResgatados = EspiaoNfe::resgateXml()
+        ->resgatados()
+        ->cnpjCpf('12345678000190')
+        ->codigoProximaPagina($codigoProxima)
+        ->get();
+}
 ```
 
 #### Exemplo: Logs
 
 ```php
+// Consultar logs por período
 $logs = EspiaoNfe::logs()
-    ->where('tipo', 'erro')
-    ->pagina(1)
+    ->cnpjCpf('12345678000190')
+    ->periodo('01/01/2024', '31/01/2024')
+    ->tipo('erro') // opcional
+    ->modelo('55') // opcional (55=NF-e, 57=CT-e, etc)
     ->get();
+
+// Com paginação
+$codigoProxima = $logs['codigoProximaPagina'];
+if ($codigoProxima !== '-1') {
+    $maisLogs = EspiaoNfe::logs()
+        ->cnpjCpf('12345678000190')
+        ->codigoProximaPagina($codigoProxima)
+        ->get();
+}
 ```
 
 ## Testes

@@ -8,40 +8,60 @@ class NfseQuery extends QueryBuilder
 {
     public function __construct(PendingRequest $http)
     {
-        parent::__construct($http, '/v1-cloud/nfse');
+        parent::__construct($http, "/v1-cloud/consulta/periodo/nfse-resumo");
     }
 
     /**
-     * Obtém o resumo de NFSe.
+     * Filtra por CNPJ/CPF da empresa.
      */
-    public function resumo(): static
+    public function cnpjCpf(string $cnpjCpf): static
     {
-        $this->endpoint = '/v1-cloud/nfse/resumo';
+        return $this->where("cnpjCpf", $cnpjCpf);
+    }
 
-        return $this;
+    /**
+     * Define a data inicial de emissão (formato: DD/MM/AAAA).
+     */
+    public function dataInicial(string $dataInicial): static
+    {
+        return $this->where("dataInicial", $dataInicial);
+    }
+
+    /**
+     * Define a data final de emissão (formato: DD/MM/AAAA).
+     */
+    public function dataFinal(string $dataFinal): static
+    {
+        return $this->where("dataFinal", $dataFinal);
+    }
+
+    /**
+     * Define o período de consulta.
+     */
+    public function periodo(string $dataInicial, string $dataFinal): static
+    {
+        return $this->dataInicial($dataInicial)->dataFinal($dataFinal);
     }
 
     /**
      * Consulta NFSe por cidade.
+     * Endpoint: /v1-cloud/nfse/consulta/cidade
      */
-    public function porCidade(array $params = []): array
+    public function porCidade(array $params): array
     {
-        $this->endpoint = '/v1-cloud/nfse/consultar-cidade';
+        $response = $this->http->get("/v1-cloud/nfse/consulta/cidade", $params);
 
-        if (! empty($params)) {
-            $this->setParams($params);
-        }
-
-        return $this->get();
+        return $this->handleResponse($response);
     }
 
     /**
-     * Lista cidades homologadas.
+     * Retorna as cidades homologadas para NFSe.
+     * Endpoint: /v1-cloud/nfse/cidades
      */
     public function cidadesHomologadas(): array
     {
-        $this->endpoint = '/v1-cloud/cidades-homologadas';
+        $response = $this->http->get("/v1-cloud/nfse/cidades");
 
-        return $this->get();
+        return $this->handleResponse($response);
     }
 }

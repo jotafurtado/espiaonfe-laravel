@@ -8,44 +8,79 @@ class ResgateXmlQuery extends QueryBuilder
 {
     public function __construct(PendingRequest $http)
     {
-        parent::__construct($http, '/v1-cloud/xmls/resgate');
+        parent::__construct($http, "/v1-cloud/resgatexml/consulta/resgatados");
     }
 
     /**
-     * Insere chaves para resgate de XML.
+     * Filtra por CNPJ/CPF da empresa.
+     */
+    public function cnpjCpf(string $cnpjCpf): static
+    {
+        return $this->where("cnpjCpf", $cnpjCpf);
+    }
+
+    /**
+     * Define a data inicial (formato: DD/MM/AAAA).
+     */
+    public function dataInicial(string $dataInicial): static
+    {
+        return $this->where("dataInicial", $dataInicial);
+    }
+
+    /**
+     * Define a data final (formato: DD/MM/AAAA).
+     */
+    public function dataFinal(string $dataFinal): static
+    {
+        return $this->where("dataFinal", $dataFinal);
+    }
+
+    /**
+     * Define o período de consulta.
+     */
+    public function periodo(string $dataInicial, string $dataFinal): static
+    {
+        return $this->dataInicial($dataInicial)->dataFinal($dataFinal);
+    }
+
+    /**
+     * Insere chaves de acesso para resgate de XML.
+     * Endpoint: /v1-cloud/resgatexml/chaves-acesso
      */
     public function inserirChaves(array $data): array
     {
-        $this->endpoint = '/v1-cloud/xmls/resgate/chaves';
+        $response = $this->http->post(
+            "/v1-cloud/resgatexml/chaves-acesso",
+            $data,
+        );
 
-        return $this->create($data);
+        return $this->handleResponse($response);
     }
 
     /**
-     * Consulta andamento do resgate de XML.
+     * Consulta o andamento do resgate de XML.
+     * Endpoint: /v1-cloud/resgatexml/consulta/andamento
      */
-    public function andamento(array $params = []): array
+    public function andamento(string $cnpjCpf, string $idRequisicao): array
     {
-        $this->endpoint = '/v1-cloud/xmls/resgate/andamento';
+        $response = $this->http->get(
+            "/v1-cloud/resgatexml/consulta/andamento",
+            [
+                "cnpjCpf" => $cnpjCpf,
+                "idRequisicao" => $idRequisicao,
+            ],
+        );
 
-        if (! empty($params)) {
-            $this->setParams($params);
-        }
-
-        return $this->get();
+        return $this->handleResponse($response);
     }
 
     /**
-     * Consulta XMLs resgatados.
+     * Consulta XMLs resgatados (usa o endpoint padrão).
+     * Endpoint: /v1-cloud/resgatexml/consulta/resgatados
      */
-    public function resgatados(array $params = []): array
+    public function resgatados(): static
     {
-        $this->endpoint = '/v1-cloud/xmls/resgate/resgatados';
-
-        if (! empty($params)) {
-            $this->setParams($params);
-        }
-
-        return $this->get();
+        // Já está no endpoint correto definido no construtor
+        return $this;
     }
 }
