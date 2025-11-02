@@ -3,44 +3,18 @@
 namespace Jcf\EspiaoNfe\Query;
 
 use Illuminate\Http\Client\PendingRequest;
+use Jcf\EspiaoNfe\Constants\Modelos;
+use Jcf\EspiaoNfe\Exceptions\EspiaoNfeException;
+use Jcf\EspiaoNfe\Query\Concerns\HasCnpjCpf;
+use Jcf\EspiaoNfe\Query\Concerns\HasPeriodo;
 
 class XmlsQuery extends QueryBuilder
 {
+    use HasCnpjCpf, HasPeriodo;
+
     public function __construct(PendingRequest $http)
     {
         parent::__construct($http, "/v1-cloud/consulta/periodo/xmls");
-    }
-
-    /**
-     * Filtra por CNPJ/CPF da empresa.
-     */
-    public function cnpjCpf(string $cnpjCpf): static
-    {
-        return $this->where("cnpjCpf", $cnpjCpf);
-    }
-
-    /**
-     * Define a data inicial (formato: DD/MM/AAAA).
-     */
-    public function dataInicial(string $dataInicial): static
-    {
-        return $this->where("dataInicial", $dataInicial);
-    }
-
-    /**
-     * Define a data final (formato: DD/MM/AAAA).
-     */
-    public function dataFinal(string $dataFinal): static
-    {
-        return $this->where("dataFinal", $dataFinal);
-    }
-
-    /**
-     * Define o período de consulta.
-     */
-    public function periodo(string $dataInicial, string $dataFinal): static
-    {
-        return $this->dataInicial($dataInicial)->dataFinal($dataFinal);
     }
 
     /**
@@ -96,13 +70,11 @@ class XmlsQuery extends QueryBuilder
      */
     public function modelo(string $modelo): static
     {
-        $modelosValidos = ["55", "65", "57", "67", "59", "41"];
-
-        if (!in_array($modelo, $modelosValidos, true)) {
-            throw new \InvalidArgumentException(
-                "Modelo inválido: '{$modelo}'. Use: 55 (NF-e), 65 (NFC-e), 57 (CT-e), 67 (CT-e OS), 59 (SAT) ou 41 (NFS-e Nacional)",
-            );
-        }
+        Modelos::validar(
+            $modelo,
+            [Modelos::NFE, Modelos::NFCE, Modelos::CTE, Modelos::CTE_OS, Modelos::SAT, Modelos::NFSE],
+            'XMLs'
+        );
 
         return $this->where("modelo", $modelo);
     }
@@ -115,7 +87,7 @@ class XmlsQuery extends QueryBuilder
      */
     public function modeloNfe(): static
     {
-        return $this->where("modelo", "55");
+        return $this->where("modelo", Modelos::NFE);
     }
 
     /**
@@ -126,7 +98,7 @@ class XmlsQuery extends QueryBuilder
      */
     public function modeloNfce(): static
     {
-        return $this->where("modelo", "65");
+        return $this->where("modelo", Modelos::NFCE);
     }
 
     /**
@@ -137,7 +109,7 @@ class XmlsQuery extends QueryBuilder
      */
     public function modeloCte(): static
     {
-        return $this->where("modelo", "57");
+        return $this->where("modelo", Modelos::CTE);
     }
 
     /**
@@ -148,7 +120,7 @@ class XmlsQuery extends QueryBuilder
      */
     public function modeloCteOs(): static
     {
-        return $this->where("modelo", "67");
+        return $this->where("modelo", Modelos::CTE_OS);
     }
 
     /**
@@ -159,7 +131,7 @@ class XmlsQuery extends QueryBuilder
      */
     public function modeloSat(): static
     {
-        return $this->where("modelo", "59");
+        return $this->where("modelo", Modelos::SAT);
     }
 
     /**
@@ -170,18 +142,25 @@ class XmlsQuery extends QueryBuilder
      */
     public function modeloNfse(): static
     {
-        return $this->where("modelo", "41");
+        return $this->where("modelo", Modelos::NFSE);
     }
 
     /**
      * Obtém XML por chave de acesso.
      * Endpoint: /v1-cloud/consulta/chave/xml
+     *
+     * @param string $chave Chave de acesso do documento
+     * @return array<string, mixed> Resposta da API
      */
     public function porChave(string $chave): array
     {
-        $response = $this->http->get("/v1-cloud/consulta/chave/xml", [
-            "chave" => $chave,
-        ]);
+        try {
+            $response = $this->http->get("/v1-cloud/consulta/chave/xml", [
+                "chave" => $chave,
+            ]);
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            $this->handleHttpException($e);
+        }
 
         return $this->handleResponse($response);
     }
@@ -189,23 +168,49 @@ class XmlsQuery extends QueryBuilder
     /**
      * Obtém PDF por chave de acesso.
      * Endpoint: /v1-cloud/consulta/chave/pdf
+     * Retorna o conteúdo binário do PDF.
+     *
+     * @param string $chave Chave de acesso do documento
+     * @return string Conteúdo binário do PDF
+     * @throws EspiaoNfeException Se a requisição falhar
      */
-    public function pdfPorChave(string $chave): array
+    public function pdfPorChave(string $chave): string
     {
-        $response = $this->http->get("/v1-cloud/consulta/chave/pdf", [
-            "chave" => $chave,
-        ]);
+        try {
+            $response = $this->http->get("/v1-cloud/consulta/chave/pdf", [
+                "chave" => $chave,
+            ]);
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            $this->handleHttpException($e);
+        }
 
-        return $this->handleResponse($response);
+        if ($response->failed()) {
+            $status = $response->status();
+            $body = $response->body();
+            throw new EspiaoNfeException(
+                "Erro ao obter PDF: {$body}. Status: {$status}.",
+                $status
+            );
+        }
+
+        // Retorna conteúdo binário em vez de JSON
+        return $response->body();
     }
 
     /**
      * Importa um XML.
      * Endpoint: /v1-cloud/importar/xml
+     *
+     * @param array<string, mixed> $data Dados do XML a importar
+     * @return array<string, mixed> Resposta da API
      */
     public function importar(array $data): array
     {
-        $response = $this->http->post("/v1-cloud/importar/xml", $data);
+        try {
+            $response = $this->http->post("/v1-cloud/importar/xml", $data);
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            $this->handleHttpException($e);
+        }
 
         return $this->handleResponse($response);
     }

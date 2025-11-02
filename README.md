@@ -29,6 +29,12 @@ Em seguida, configure as variáveis de ambiente no seu arquivo `.env`:
 ESPIAONFE_CLOUD_TOKEN=seu_esp_cloud_token_aqui
 ESPIAONFE_USER_TOKEN=seu_user_token_aqui
 ESPIAONFE_BASE_URI=https://api.espiaonfe.com.br
+
+# Configurações avançadas (opcionais)
+ESPIAONFE_TIMEOUT=30                    # Timeout das requisições em segundos (padrão: 30)
+ESPIAONFE_RETRY=3                      # Número de tentativas automáticas (padrão: 3)
+ESPIAONFE_RETRY_DELAY=100               # Delay entre tentativas em milissegundos (padrão: 100)
+ESPIAONFE_LOG_REQUESTS=false           # Habilitar logging de requisições (padrão: false)
 ```
 
 > **Nota**: O `ESPIAONFE_BASE_URI` é opcional e já possui um valor padrão (`https://api.espiaonfe.com.br`). Use apenas se precisar apontar para um ambiente diferente.
@@ -37,36 +43,38 @@ ESPIAONFE_BASE_URI=https://api.espiaonfe.com.br
 
 O pacote fornece uma **API fluente estilo Laravel** que torna o uso extremamente elegante e intuitivo:
 
-### ✨ Métodos Intuitivos (v0.0.3+)
+### ✨ Métodos Intuitivos
 
-O pacote agora inclui **métodos auto-explicativos** que tornam o código mais limpo e fácil de entender:
+O pacote inclui métodos auto-explicativos que tornam o código mais limpo e fácil de entender:
 
 #### Tipo de Período (XMLs)
-```php
-// ❌ Antes (menos intuitivo)
-->tipoPeriodo('E')  // O que é 'E'?
 
-// ✅ Agora (auto-explicativo)
-->tipoPeriodoEmissao()   // Claro!
-->tipoPeriodoInclusao()  // Óbvio!
+```php
+// Consulta pelo período de emissão do documento
+->tipoPeriodoEmissao()
+
+// Consulta pelo período de inclusão no Espião Cloud
+->tipoPeriodoInclusao()
+
+// Ou use diretamente (E = emissão, I = inclusão)
+->tipoPeriodo('E')
+->tipoPeriodo('I')
 ```
 
 #### Modelos de Documentos
-```php
-// ❌ Antes (menos intuitivo)
-->modelo('55')  // O que é '55'?
-->modelo('57')  // O que é '57'?
 
-// ✅ Agora (auto-explicativo)
+```php
+// Métodos intuitivos para cada modelo
 ->modeloNfe()    // NF-e (modelo 55)
 ->modeloNfce()   // NFC-e (modelo 65)
 ->modeloCte()    // CT-e (modelo 57)
 ->modeloCteOs()  // CT-e OS (modelo 67)
 ->modeloSat()    // SAT (modelo 59)
 ->modeloNfse()   // NFS-e Nacional (modelo 41)
-```
 
-**Todos os métodos antigos continuam funcionando!** Os novos métodos são opcionais e melhoram a experiência de desenvolvimento.
+// Ou use diretamente com o código do modelo
+->modelo('55') // 55, 65, 57, 67, 59, 41
+```
 
 ### API Fluente ✨
 
@@ -136,28 +144,28 @@ EspiaoNfe::certificados()
 #### Exemplo: NF-e, CT-e e NFSe
 
 ```php
-// Consultar NF-e por período (até 100 por página) - Forma intuitiva ✨
+// Consultar NF-e por período (até 100 por página)
 $nfeResumo = EspiaoNfe::nfe()
     ->cnpjCpf('12345678000190')
     ->periodo('01/01/2024', '31/01/2024')
-    ->modeloNfe() // ← Método intuitivo para modelo 55 (NF-e)
+    ->modeloNfe() // Método intuitivo para modelo 55 (NF-e)
     ->get();
 
 // Consultar NFC-e (Nota Fiscal de Consumidor)
 $nfceResumo = EspiaoNfe::nfe()
     ->cnpjCpf('12345678000190')
     ->periodo('01/01/2024', '31/01/2024')
-    ->modeloNfce() // ← Método intuitivo para modelo 65 (NFC-e)
+    ->modeloNfce() // Método intuitivo para modelo 65 (NFC-e)
     ->get();
 
 // Consultar SAT (Sistema Autenticador e Transmissor)
 $satResumo = EspiaoNfe::nfe()
     ->cnpjCpf('12345678000190')
     ->periodo('01/01/2024', '31/01/2024')
-    ->modeloSat() // ← Método intuitivo para modelo 59 (SAT)
+    ->modeloSat() // Método intuitivo para modelo 59 (SAT)
     ->get();
 
-// Ou usar modelo() diretamente (ainda suportado)
+// Ou usar modelo() diretamente
 $nfeResumo = EspiaoNfe::nfe()
     ->cnpjCpf('12345678000190')
     ->periodo('01/01/2024', '31/01/2024')
@@ -170,14 +178,14 @@ $resultado = EspiaoNfe::nfe()->manifestar([
     'tipo' => '210200',
 ]);
 
-// Consultar CT-e por período (até 100 por página) - Forma intuitiva ✨
+// Consultar CT-e por período (até 100 por página)
 $cteResumo = EspiaoNfe::cte()
     ->cnpjCpf('12345678000190')
     ->periodo('01/01/2024', '31/01/2024')
-    ->modeloCte() // ← Método intuitivo para modelo 57 (CT-e)
+    ->modeloCte() // Método intuitivo para modelo 57 (CT-e)
     ->get();
 
-// Ou usar modelo() diretamente (ainda suportado)
+// Ou usar modelo() diretamente
 $cteResumo = EspiaoNfe::cte()
     ->cnpjCpf('12345678000190')
     ->periodo('01/01/2024', '31/01/2024')
@@ -211,20 +219,20 @@ $cidades = EspiaoNfe::nfse()->cidadesHomologadas();
 #### Exemplo: XMLs e PDFs
 
 ```php
-// Listar XMLs de NF-e por período de emissão - Forma intuitiva ✨
+// Listar XMLs de NF-e por período de emissão
 $xmls = EspiaoNfe::xmls()
     ->cnpjCpf('12345678000190')
     ->periodo('01/01/2024', '31/01/2024')
-    ->tipoPeriodoEmissao() // ← Período de emissão
-    ->modeloNfe() // ← Modelo 55 (NF-e)
+    ->tipoPeriodoEmissao() // Período de emissão
+    ->modeloNfe() // Modelo 55 (NF-e)
     ->get();
 
 // XMLs de NFC-e por período de inclusão
 $xmls = EspiaoNfe::xmls()
     ->cnpjCpf('12345678000190')
     ->periodo('01/01/2024', '31/01/2024')
-    ->tipoPeriodoInclusao() // ← Período de inclusão no sistema
-    ->modeloNfce() // ← Modelo 65 (NFC-e)
+    ->tipoPeriodoInclusao() // Período de inclusão no sistema
+    ->modeloNfce() // Modelo 65 (NFC-e)
     ->get();
 
 // XMLs de CT-e
@@ -232,7 +240,7 @@ $xmls = EspiaoNfe::xmls()
     ->cnpjCpf('12345678000190')
     ->periodo('01/01/2024', '31/01/2024')
     ->tipoPeriodoEmissao()
-    ->modeloCte() // ← Modelo 57 (CT-e)
+    ->modeloCte() // Modelo 57 (CT-e)
     ->get();
 
 // XMLs de CT-e OS (Outros Serviços)
@@ -240,7 +248,7 @@ $xmls = EspiaoNfe::xmls()
     ->cnpjCpf('12345678000190')
     ->periodo('01/01/2024', '31/01/2024')
     ->tipoPeriodoEmissao()
-    ->modeloCteOs() // ← Modelo 67 (CT-e OS)
+    ->modeloCteOs() // Modelo 67 (CT-e OS)
     ->get();
 
 // XMLs de SAT
@@ -248,7 +256,7 @@ $xmls = EspiaoNfe::xmls()
     ->cnpjCpf('12345678000190')
     ->periodo('01/01/2024', '31/01/2024')
     ->tipoPeriodoEmissao()
-    ->modeloSat() // ← Modelo 59 (SAT)
+    ->modeloSat() // Modelo 59 (SAT)
     ->get();
 
 // XMLs de NFS-e Nacional
@@ -256,10 +264,10 @@ $xmls = EspiaoNfe::xmls()
     ->cnpjCpf('12345678000190')
     ->periodo('01/01/2024', '31/01/2024')
     ->tipoPeriodoInclusao()
-    ->modeloNfse() // ← Modelo 41 (NFS-e Nacional)
+    ->modeloNfse() // Modelo 41 (NFS-e Nacional)
     ->get();
 
-// Ainda é possível usar tipoPeriodo() e modelo() diretamente
+// Ou usar tipoPeriodo() e modelo() diretamente
 $xmls = EspiaoNfe::xmls()
     ->cnpjCpf('12345678000190')
     ->periodo('01/01/2024', '31/01/2024')
@@ -285,6 +293,7 @@ $resultado = EspiaoNfe::xmls()->importar([
 Estes métodos definem como o período de consulta será interpretado:
 
 - **`tipoPeriodoEmissao()`** - Consulta pela **data de emissão do documento**
+
   - Filtra XMLs pela data em que o documento foi **emitido pelo emissor**
   - Exemplo: NF-e emitida em 15/01/2024 será encontrada ao buscar o período de 01/01/2024 a 31/01/2024
   - **Use quando**: Você quer todos os documentos emitidos em um determinado período
@@ -363,7 +372,7 @@ if ($codigoProxima !== '-1') {
 #### Exemplo: Logs
 
 ```php
-// Consultar logs de NF-e - Forma intuitiva ✨
+// Consultar logs de NF-e
 $logs = EspiaoNfe::logs()
     ->cnpjCpf('12345678000190')
     ->periodo('01/01/2024', '31/01/2024')
@@ -396,29 +405,95 @@ if ($codigoProxima !== '-1') {
 }
 ```
 
-## 📚 Documentação Adicional
+## Validações e Tratamento de Erros
 
-- **[METODOS_MODELO.md](METODOS_MODELO.md)** - Guia completo de todos os métodos de modelo
-- **[EXEMPLOS_TIPO_PERIODO.md](EXEMPLOS_TIPO_PERIODO.md)** - Exemplos práticos de tipoPeriodo
-- **[GUIA_RAPIDO_TIPO_PERIODO.md](GUIA_RAPIDO_TIPO_PERIODO.md)** - Referência rápida
-- **[MELHORIA_TIPO_PERIODO.md](MELHORIA_TIPO_PERIODO.md)** - Documento técnico sobre tipoPeriodo
-- **[MELHORIA_LOGS.md](MELHORIA_LOGS.md)** - Documento técnico sobre Logs
+O pacote inclui validações automáticas e tratamento de erros robusto:
 
-## Testes
+### Validações Automáticas
 
-Execute os testes do pacote usando PHPUnit:
+- **Formato de Data**: Valida formato DD/MM/AAAA e verifica se a data é válida
+- **Ordem de Período**: Garante que a data inicial seja anterior ou igual à data final
+- **CNPJ/CPF**: Valida formato básico (11 ou 14 dígitos, aceita formatação)
+- **Modelos**: Valida modelos fiscais conforme contexto (NF-e, CT-e, etc.)
 
-```bash
-cd packages/Jcf/EspiaoNfe
-vendor/bin/phpunit
+```php
+// Validação automática de formato de data
+try {
+    EspiaoNfe::nfe()
+        ->cnpjCpf('12345678000190')
+        ->periodo('2024-01-01', '31/01/2024'); // Formato inválido
+} catch (\InvalidArgumentException $e) {
+    echo $e->getMessage(); // "Formato de data inválido: '2024-01-01'. Use: DD/MM/AAAA"
+}
+
+// Validação de ordem de período
+try {
+    EspiaoNfe::nfe()
+        ->cnpjCpf('12345678000190')
+        ->periodo('31/01/2024', '01/01/2024'); // Data inicial depois da final
+} catch (\InvalidArgumentException $e) {
+    echo $e->getMessage(); // "A data inicial (31/01/2024) deve ser anterior ou igual à data final (01/01/2024)"
+}
+
+// Validação de CNPJ/CPF
+try {
+    EspiaoNfe::nfe()->cnpjCpf('123'); // CNPJ/CPF inválido
+} catch (\InvalidArgumentException $e) {
+    echo $e->getMessage(); // "CNPJ/CPF inválido: deve ter 11 dígitos (CPF) ou 14 dígitos (CNPJ)"
+}
 ```
 
-Ou execute uma suite específica:
+### Exceções Específicas
 
-```bash
-vendor/bin/phpunit --testsuite=Unit
-vendor/bin/phpunit --testsuite=Feature
+O pacote fornece exceções específicas para diferentes tipos de erros HTTP:
+
+```php
+use Jcf\EspiaoNfe\Exceptions\AuthenticationException;
+use Jcf\EspiaoNfe\Exceptions\NotFoundException;
+use Jcf\EspiaoNfe\Exceptions\ValidationException;
+use Jcf\EspiaoNfe\Exceptions\EspiaoNfeException;
+
+try {
+    $certificados = EspiaoNfe::certificados()->get();
+} catch (AuthenticationException $e) {
+    // Erro 401/403 - Problema de autenticação
+    // Verifique se os tokens estão corretos
+} catch (NotFoundException $e) {
+    // Erro 404 - Recurso não encontrado
+    // Verifique se o ID do recurso está correto
+} catch (ValidationException $e) {
+    // Erro 422 - Erro de validação
+    // Verifique os dados enviados na requisição
+} catch (EspiaoNfeException $e) {
+    // Outros erros HTTP (500, 503, etc.)
+    // Erro geral da API
+}
 ```
+
+## Configurações Avançadas
+
+### Timeout e Retry
+
+Configure timeout e retry automático para requisições:
+
+```env
+ESPIAONFE_TIMEOUT=60          # Timeout de 60 segundos
+ESPIAONFE_RETRY=5             # 5 tentativas automáticas
+ESPIAONFE_RETRY_DELAY=200     # 200ms entre tentativas
+```
+
+### Logging de Requisições
+
+Para debug, você pode habilitar o logging de todas as requisições:
+
+```env
+ESPIAONFE_LOG_REQUESTS=true
+```
+
+Isso registrará no log do Laravel:
+
+- Todas as requisições HTTP (método, URI, dados)
+- Todas as respostas de erro (status, corpo da resposta)
 
 ## Changelog
 

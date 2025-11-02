@@ -3,56 +3,35 @@
 namespace Jcf\EspiaoNfe\Query;
 
 use Illuminate\Http\Client\PendingRequest;
+use Jcf\EspiaoNfe\Query\Concerns\HasCnpjCpf;
+use Jcf\EspiaoNfe\Query\Concerns\HasPeriodo;
 
 class ResgateXmlQuery extends QueryBuilder
 {
+    use HasCnpjCpf, HasPeriodo;
+
     public function __construct(PendingRequest $http)
     {
         parent::__construct($http, "/v1-cloud/resgatexml/consulta/resgatados");
     }
 
     /**
-     * Filtra por CNPJ/CPF da empresa.
-     */
-    public function cnpjCpf(string $cnpjCpf): static
-    {
-        return $this->where("cnpjCpf", $cnpjCpf);
-    }
-
-    /**
-     * Define a data inicial (formato: DD/MM/AAAA).
-     */
-    public function dataInicial(string $dataInicial): static
-    {
-        return $this->where("dataInicial", $dataInicial);
-    }
-
-    /**
-     * Define a data final (formato: DD/MM/AAAA).
-     */
-    public function dataFinal(string $dataFinal): static
-    {
-        return $this->where("dataFinal", $dataFinal);
-    }
-
-    /**
-     * Define o período de consulta.
-     */
-    public function periodo(string $dataInicial, string $dataFinal): static
-    {
-        return $this->dataInicial($dataInicial)->dataFinal($dataFinal);
-    }
-
-    /**
      * Insere chaves de acesso para resgate de XML.
      * Endpoint: /v1-cloud/resgatexml/chaves-acesso
+     *
+     * @param array<string, mixed> $data Dados com chaves de acesso
+     * @return array<string, mixed> Resposta da API
      */
     public function inserirChaves(array $data): array
     {
-        $response = $this->http->post(
-            "/v1-cloud/resgatexml/chaves-acesso",
-            $data,
-        );
+        try {
+            $response = $this->http->post(
+                "/v1-cloud/resgatexml/chaves-acesso",
+                $data,
+            );
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            $this->handleHttpException($e);
+        }
 
         return $this->handleResponse($response);
     }
@@ -60,16 +39,24 @@ class ResgateXmlQuery extends QueryBuilder
     /**
      * Consulta o andamento do resgate de XML.
      * Endpoint: /v1-cloud/resgatexml/consulta/andamento
+     *
+     * @param string $cnpjCpf CNPJ/CPF da empresa
+     * @param string $idRequisicao ID da requisição
+     * @return array<string, mixed> Resposta da API
      */
     public function andamento(string $cnpjCpf, string $idRequisicao): array
     {
-        $response = $this->http->get(
-            "/v1-cloud/resgatexml/consulta/andamento",
-            [
-                "cnpjCpf" => $cnpjCpf,
-                "idRequisicao" => $idRequisicao,
-            ],
-        );
+        try {
+            $response = $this->http->get(
+                "/v1-cloud/resgatexml/consulta/andamento",
+                [
+                    "cnpjCpf" => $cnpjCpf,
+                    "idRequisicao" => $idRequisicao,
+                ],
+            );
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            $this->handleHttpException($e);
+        }
 
         return $this->handleResponse($response);
     }
@@ -77,6 +64,8 @@ class ResgateXmlQuery extends QueryBuilder
     /**
      * Consulta XMLs resgatados (usa o endpoint padrão).
      * Endpoint: /v1-cloud/resgatexml/consulta/resgatados
+     *
+     * @return static
      */
     public function resgatados(): static
     {

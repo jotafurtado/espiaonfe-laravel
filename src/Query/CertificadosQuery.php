@@ -13,6 +13,9 @@ class CertificadosQuery extends QueryBuilder
 
     /**
      * Filtra por serial do certificado.
+     *
+     * @param string $serial Serial do certificado
+     * @return static
      */
     public function serial(string $serial): static
     {

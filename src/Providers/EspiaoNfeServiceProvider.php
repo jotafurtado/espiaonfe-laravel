@@ -22,7 +22,11 @@ class EspiaoNfeServiceProvider extends ServiceProvider
             return new \Jcf\EspiaoNfe\Http\Client(
                 $config['esp_cloud_token'],
                 $config['user_token'],
-                $config['base_uri']
+                $config['base_uri'],
+                $config['timeout'] ?? 30,
+                $config['retry'] ?? 3,
+                $config['retry_delay'] ?? 100,
+                $config['log_requests'] ?? false,
             );
         });
     }

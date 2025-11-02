@@ -272,7 +272,7 @@ class ClientTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage(
-            "Modelo inválido: '99'. Use: 55 (NF-e) ou 57 (CT-e)",
+            "Modelo inválido: '99' para Logs",
         );
 
         EspiaoNfe::logs()

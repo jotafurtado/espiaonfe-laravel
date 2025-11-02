@@ -3,44 +3,17 @@
 namespace Jcf\EspiaoNfe\Query;
 
 use Illuminate\Http\Client\PendingRequest;
+use Jcf\EspiaoNfe\Constants\Modelos;
+use Jcf\EspiaoNfe\Query\Concerns\HasCnpjCpf;
+use Jcf\EspiaoNfe\Query\Concerns\HasPeriodo;
 
 class NfeQuery extends QueryBuilder
 {
+    use HasCnpjCpf, HasPeriodo;
+
     public function __construct(PendingRequest $http)
     {
         parent::__construct($http, "/v1-cloud/consulta/periodo/nfe-resumo");
-    }
-
-    /**
-     * Filtra por CNPJ/CPF da empresa.
-     */
-    public function cnpjCpf(string $cnpjCpf): static
-    {
-        return $this->where("cnpjCpf", $cnpjCpf);
-    }
-
-    /**
-     * Define a data inicial de emissão (formato: DD/MM/AAAA).
-     */
-    public function dataInicial(string $dataInicial): static
-    {
-        return $this->where("dataInicial", $dataInicial);
-    }
-
-    /**
-     * Define a data final de emissão (formato: DD/MM/AAAA).
-     */
-    public function dataFinal(string $dataFinal): static
-    {
-        return $this->where("dataFinal", $dataFinal);
-    }
-
-    /**
-     * Define o período de consulta.
-     */
-    public function periodo(string $dataInicial, string $dataFinal): static
-    {
-        return $this->dataInicial($dataInicial)->dataFinal($dataFinal);
     }
 
     /**
@@ -53,13 +26,7 @@ class NfeQuery extends QueryBuilder
      */
     public function modelo(string $modelo): static
     {
-        $modelosValidos = ["55", "65", "59"];
-
-        if (!in_array($modelo, $modelosValidos, true)) {
-            throw new \InvalidArgumentException(
-                "Modelo inválido: '{$modelo}'. Use: 55 (NF-e), 65 (NFC-e) ou 59 (SAT)",
-            );
-        }
+        Modelos::validar($modelo, [Modelos::NFE, Modelos::NFCE, Modelos::SAT], 'NF-e');
 
         return $this->where("modelo", $modelo);
     }
@@ -72,7 +39,7 @@ class NfeQuery extends QueryBuilder
      */
     public function modeloNfe(): static
     {
-        return $this->where("modelo", "55");
+        return $this->where("modelo", Modelos::NFE);
     }
 
     /**
@@ -83,7 +50,7 @@ class NfeQuery extends QueryBuilder
      */
     public function modeloNfce(): static
     {
-        return $this->where("modelo", "65");
+        return $this->where("modelo", Modelos::NFCE);
     }
 
     /**
@@ -94,19 +61,26 @@ class NfeQuery extends QueryBuilder
      */
     public function modeloSat(): static
     {
-        return $this->where("modelo", "59");
+        return $this->where("modelo", Modelos::SAT);
     }
 
     /**
      * Manifesta uma NF-e.
      * Endpoint: /v1-cloud/manifestacao/nfe/manifestar
+     *
+     * @param array<string, mixed> $data Dados da manifestação
+     * @return array<string, mixed> Resposta da API
      */
     public function manifestar(array $data): array
     {
-        $response = $this->http->post(
-            "/v1-cloud/manifestacao/nfe/manifestar",
-            $data,
-        );
+        try {
+            $response = $this->http->post(
+                "/v1-cloud/manifestacao/nfe/manifestar",
+                $data,
+            );
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            $this->handleHttpException($e);
+        }
 
         return $this->handleResponse($response);
     }

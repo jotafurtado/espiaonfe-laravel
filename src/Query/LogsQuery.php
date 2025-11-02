@@ -3,48 +3,24 @@
 namespace Jcf\EspiaoNfe\Query;
 
 use Illuminate\Http\Client\PendingRequest;
+use Jcf\EspiaoNfe\Constants\Modelos;
+use Jcf\EspiaoNfe\Query\Concerns\HasCnpjCpf;
+use Jcf\EspiaoNfe\Query\Concerns\HasPeriodo;
 
 class LogsQuery extends QueryBuilder
 {
+    use HasCnpjCpf, HasPeriodo;
+
     public function __construct(PendingRequest $http)
     {
         parent::__construct($http, "/v1-cloud/consulta/periodo/logs");
     }
 
     /**
-     * Filtra por CNPJ/CPF da empresa.
-     */
-    public function cnpjCpf(string $cnpjCpf): static
-    {
-        return $this->where("cnpjCpf", $cnpjCpf);
-    }
-
-    /**
-     * Define a data inicial (formato: DD/MM/AAAA).
-     */
-    public function dataInicial(string $dataInicial): static
-    {
-        return $this->where("dataInicial", $dataInicial);
-    }
-
-    /**
-     * Define a data final (formato: DD/MM/AAAA).
-     */
-    public function dataFinal(string $dataFinal): static
-    {
-        return $this->where("dataFinal", $dataFinal);
-    }
-
-    /**
-     * Define o período de consulta.
-     */
-    public function periodo(string $dataInicial, string $dataFinal): static
-    {
-        return $this->dataInicial($dataInicial)->dataFinal($dataFinal);
-    }
-
-    /**
      * Filtra por tipo de log.
+     *
+     * @param string $tipo Tipo do log
+     * @return static
      */
     public function tipo(string $tipo): static
     {
@@ -61,13 +37,7 @@ class LogsQuery extends QueryBuilder
      */
     public function modelo(string $modelo): static
     {
-        $modelosValidos = ["55", "57"];
-
-        if (!in_array($modelo, $modelosValidos, true)) {
-            throw new \InvalidArgumentException(
-                "Modelo inválido: '{$modelo}'. Use: 55 (NF-e) ou 57 (CT-e)",
-            );
-        }
+        Modelos::validar($modelo, [Modelos::NFE, Modelos::CTE], 'Logs');
 
         return $this->where("modelo", $modelo);
     }
@@ -80,7 +50,7 @@ class LogsQuery extends QueryBuilder
      */
     public function modeloNfe(): static
     {
-        return $this->where("modelo", "55");
+        return $this->where("modelo", Modelos::NFE);
     }
 
     /**
@@ -91,6 +61,6 @@ class LogsQuery extends QueryBuilder
      */
     public function modeloCte(): static
     {
-        return $this->where("modelo", "57");
+        return $this->where("modelo", Modelos::CTE);
     }
 }

@@ -53,5 +53,54 @@ return [
 
     'base_uri' => env('ESPIAONFE_BASE_URI', 'https://api.espiaonfe.com.br'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Timeout
+    |--------------------------------------------------------------------------
+    |
+    | Tempo máximo em segundos para aguardar uma resposta da API.
+    | Valor padrão: 30 segundos.
+    |
+    */
+
+    'timeout' => env('ESPIAONFE_TIMEOUT', 30),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Retry
+    |--------------------------------------------------------------------------
+    |
+    | Número de tentativas em caso de falha na requisição.
+    | Valor padrão: 3 tentativas.
+    |
+    */
+
+    'retry' => env('ESPIAONFE_RETRY', 3),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Retry Delay
+    |--------------------------------------------------------------------------
+    |
+    | Tempo em milissegundos entre tentativas de retry.
+    | Valor padrão: 100ms.
+    |
+    */
+
+    'retry_delay' => env('ESPIAONFE_RETRY_DELAY', 100),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Log Requests
+    |--------------------------------------------------------------------------
+    |
+    | Se habilitado, registra todas as requisições HTTP no log da aplicação.
+    | Útil para debug, mas pode gerar muitos logs em produção.
+    | Valor padrão: false.
+    |
+    */
+
+    'log_requests' => env('ESPIAONFE_LOG_REQUESTS', false),
+
 ];
 

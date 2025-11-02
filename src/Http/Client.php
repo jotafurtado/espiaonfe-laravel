@@ -4,6 +4,7 @@ namespace Jcf\EspiaoNfe\Http;
 
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Jcf\EspiaoNfe\Exceptions\EspiaoNfeException;
 use Jcf\EspiaoNfe\Query\CertificadosQuery;
 use Jcf\EspiaoNfe\Query\CteQuery;
@@ -22,23 +23,34 @@ class Client
         protected string $espCloudToken,
         protected string $userToken,
         protected string $baseUri,
+        protected int $timeout = 30,
+        protected int $retry = 3,
+        protected int $retryDelay = 100,
+        protected bool $logRequests = false,
     ) {
-        if (empty($this->espCloudToken) || empty($this->userToken)) {
+        if (empty(trim($this->espCloudToken)) || empty(trim($this->userToken))) {
             throw new EspiaoNfeException(
                 "Os tokens esp_cloud_token e user_token são obrigatórios.",
             );
         }
 
-        $this->http = Http::baseUrl($this->baseUri)->withHeaders([
-            "esp-cloud-token" => $this->espCloudToken,
-            "user-token" => $this->userToken,
-            "Accept" => "application/json",
-        ]);
+        $this->http = Http::baseUrl($this->baseUri)
+            ->timeout($this->timeout)
+            ->retry($this->retry, $this->retryDelay)
+            ->withHeaders([
+                "esp-cloud-token" => $this->espCloudToken,
+                "user-token" => $this->userToken,
+                "Accept" => "application/json",
+            ]);
     }
 
     /**
      * Executa uma requisição HTTP.
      *
+     * @param string $method Método HTTP (GET, POST, PUT, DELETE)
+     * @param string $uri URI do endpoint
+     * @param array $data Dados da requisição
+     * @return array<string, mixed> Resposta da API
      * @throws EspiaoNfeException
      */
     protected function makeRequest(
@@ -46,6 +58,14 @@ class Client
         string $uri,
         array $data = [],
     ): array {
+        if ($this->logRequests) {
+            Log::debug('EspiaoNfe Request', [
+                'method' => $method,
+                'uri' => $uri,
+                'data' => $data,
+            ]);
+        }
+
         $response = match (strtoupper($method)) {
             "GET" => $this->http->get($uri, $data),
             "POST" => $this->http->post($uri, $data),
@@ -57,6 +77,15 @@ class Client
         };
 
         if ($response->failed()) {
+            if ($this->logRequests) {
+                Log::error('EspiaoNfe Request Failed', [
+                    'method' => $method,
+                    'uri' => $uri,
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+            }
+
             throw new EspiaoNfeException(
                 "Erro na requisição: {$response->body()}. Status: {$response->status()}.",
             );
