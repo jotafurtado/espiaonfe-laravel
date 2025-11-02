@@ -44,6 +44,36 @@ class CteQuery extends QueryBuilder
     }
 
     /**
+     * Define o modelo do CT-e.
+     * Modelo aceito: 57 (CT-e)
+     *
+     * @param string $modelo O modelo do documento fiscal
+     * @return static
+     * @throws \InvalidArgumentException Se o modelo for inválido
+     */
+    public function modelo(string $modelo): static
+    {
+        if ($modelo !== "57") {
+            throw new \InvalidArgumentException(
+                "Modelo inválido: '{$modelo}'. Use: 57 (CT-e)",
+            );
+        }
+
+        return $this->where("modelo", $modelo);
+    }
+
+    /**
+     * Filtra por CT-e (modelo 57).
+     * Atalho para modelo('57')
+     *
+     * @return static
+     */
+    public function modeloCte(): static
+    {
+        return $this->where("modelo", "57");
+    }
+
+    /**
      * Registra desacordo de CT-e.
      * Endpoint: /v1-cloud/manifestacao/cte/desacordo
      */

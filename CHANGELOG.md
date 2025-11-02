@@ -7,6 +7,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.3] - 2025-11-02
+
+### Added
+- ✅ Métodos `tipoPeriodoEmissao()` e `tipoPeriodoInclusao()` para XMLs - API mais intuitiva e amigável
+  - `tipoPeriodoEmissao()` - Consulta XMLs pelo período de emissão do documento
+  - `tipoPeriodoInclusao()` - Consulta XMLs pelo período de inclusão no Espião Cloud
+  - Mantém compatibilidade com `tipoPeriodo('E')` e `tipoPeriodo('I')`
+
+- ✅ Métodos auxiliares de modelo para todas as queries - API mais intuitiva e amigável
+  
+  **NfeQuery:**
+  - `modeloNfe()` - Consulta NF-e (modelo 55)
+  - `modeloNfce()` - Consulta NFC-e (modelo 65)
+  - `modeloSat()` - Consulta SAT (modelo 59)
+  
+  **CteQuery:**
+  - `modeloCte()` - Consulta CT-e (modelo 57)
+  
+  **XmlsQuery:**
+  - `modeloNfe()` - Consulta XMLs de NF-e (modelo 55)
+  - `modeloNfce()` - Consulta XMLs de NFC-e (modelo 65)
+  - `modeloCte()` - Consulta XMLs de CT-e (modelo 57)
+  - `modeloCteOs()` - Consulta XMLs de CT-e OS (modelo 67)
+  - `modeloSat()` - Consulta XMLs de SAT (modelo 59)
+  - `modeloNfse()` - Consulta XMLs de NFS-e Nacional (modelo 41)
+  
+  **LogsQuery:**
+  - `modeloNfe()` - Consulta logs de NF-e (modelo 55)
+  - `modeloCte()` - Consulta logs de CT-e (modelo 57)
+  
+  Todos os métodos incluem validação automática e mantêm compatibilidade com `modelo('XX')`
+  
+**Exemplo de uso:**
+```php
+// Mais intuitivo e legível
+$xmls = EspiaoNfe::xmls()
+    ->cnpjCpf('12345678000190')
+    ->periodo('01/01/2024', '31/01/2024')
+    ->tipoPeriodoEmissao() // Consulta pelo período de emissão
+    ->modelo('55')
+    ->get();
+
+// Ou para consultar pelo período de inclusão
+$xmls = EspiaoNfe::xmls()
+    ->cnpjCpf('12345678000190')
+    ->periodo('01/01/2024', '31/01/2024')
+    ->tipoPeriodoInclusao() // Consulta pelo período de inclusão
+    ->modelo('55')
+    ->get();
+```
+
+**Exemplo de uso (Logs):**
+```php
+// Mais intuitivo e legível
+$logs = EspiaoNfe::logs()
+    ->cnpjCpf('12345678000190')
+    ->periodo('01/01/2024', '31/01/2024')
+    ->modeloNfe() // Consulta logs de NF-e
+    ->get();
+
+// Ou para consultar logs de CT-e
+$logs = EspiaoNfe::logs()
+    ->cnpjCpf('12345678000190')
+    ->periodo('01/01/2024', '31/01/2024')
+    ->modeloCte() // Consulta logs de CT-e
+    ->get();
+```
+
 ## [0.0.2] - 2024-11-01
 
 ### Changed - BREAKING CHANGES ⚠️
@@ -100,6 +168,7 @@ $nfe = EspiaoNfe::nfe()
 - HTTP client abstraction with Laravel HTTP facade
 - Comprehensive error handling with custom exceptions
 
-[Unreleased]: https://github.com/jotacfurtado/espiaonfe-laravel/compare/v0.0.2...HEAD
+[Unreleased]: https://github.com/jotacfurtado/espiaonfe-laravel/compare/v0.0.3...HEAD
+[0.0.3]: https://github.com/jotacfurtado/espiaonfe-laravel/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/jotacfurtado/espiaonfe-laravel/compare/v0.0.1...v0.0.2
 [0.0.1]: https://github.com/jotacfurtado/espiaonfe-laravel/releases/tag/v0.0.1
