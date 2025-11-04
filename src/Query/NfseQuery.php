@@ -25,7 +25,10 @@ class NfseQuery extends QueryBuilder
     public function porCidade(array $params): array
     {
         try {
-            $response = $this->http->get("/v1-cloud/nfse/consulta/cidade", $params);
+            $response = $this->http->get(
+                "/v1-cloud/nfse/consulta/cidade",
+                $params,
+            );
         } catch (\Illuminate\Http\Client\RequestException $e) {
             $this->handleHttpException($e);
         }

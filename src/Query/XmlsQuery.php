@@ -72,8 +72,15 @@ class XmlsQuery extends QueryBuilder
     {
         Modelos::validar(
             $modelo,
-            [Modelos::NFE, Modelos::NFCE, Modelos::CTE, Modelos::CTE_OS, Modelos::SAT, Modelos::NFSE],
-            'XMLs'
+            [
+                Modelos::NFE,
+                Modelos::NFCE,
+                Modelos::CTE,
+                Modelos::CTE_OS,
+                Modelos::SAT,
+                Modelos::NFSE,
+            ],
+            "XMLs",
         );
 
         return $this->where("modelo", $modelo);
@@ -189,7 +196,7 @@ class XmlsQuery extends QueryBuilder
             $body = $response->body();
             throw new EspiaoNfeException(
                 "Erro ao obter PDF: {$body}. Status: {$status}.",
-                $status
+                $status,
             );
         }
 

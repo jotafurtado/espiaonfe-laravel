@@ -37,7 +37,7 @@ class LogsQuery extends QueryBuilder
      */
     public function modelo(string $modelo): static
     {
-        Modelos::validar($modelo, [Modelos::NFE, Modelos::CTE], 'Logs');
+        Modelos::validar($modelo, [Modelos::NFE, Modelos::CTE], "Logs");
 
         return $this->where("modelo", $modelo);
     }

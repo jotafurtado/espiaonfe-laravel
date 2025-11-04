@@ -26,7 +26,7 @@ class CteQuery extends QueryBuilder
      */
     public function modelo(string $modelo): static
     {
-        Modelos::validar($modelo, [Modelos::CTE], 'CT-e');
+        Modelos::validar($modelo, [Modelos::CTE], "CT-e");
 
         return $this->where("modelo", $modelo);
     }

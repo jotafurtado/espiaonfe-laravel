@@ -206,38 +206,39 @@ abstract class QueryBuilder
      * @return never
      * @throws AuthenticationException|NotFoundException|ValidationException|EspiaoNfeException
      */
-    protected function handleHttpException(\Illuminate\Http\Client\RequestException $e): never
-    {
+    protected function handleHttpException(
+        \Illuminate\Http\Client\RequestException $e,
+    ): never {
         $response = $e->response;
         $status = $response ? $response->status() : 0;
         $body = $response ? $response->body() : $e->getMessage();
         $uri = $this->buildUri();
 
         if ($this->logRequests) {
-            Log::error('EspiaoNfe Query Request Failed', [
-                'endpoint' => $uri,
-                'status' => $status,
-                'body' => $body,
-                'exception' => $e->getMessage(),
+            Log::error("EspiaoNfe Query Request Failed", [
+                "endpoint" => $uri,
+                "status" => $status,
+                "body" => $body,
+                "exception" => $e->getMessage(),
             ]);
         }
 
         match ($status) {
             401, 403 => throw new AuthenticationException(
                 "Erro de autenticação na API EspiaoNfe. Status: {$status}. Resposta: {$body}",
-                $status
+                $status,
             ),
             404 => throw new NotFoundException(
                 "Recurso não encontrado na API EspiaoNfe. Status: {$status}. Resposta: {$body}",
-                $status
+                $status,
             ),
             422 => throw new ValidationException(
                 "Erro de validação na API EspiaoNfe. Status: {$status}. Resposta: {$body}",
-                $status
+                $status,
             ),
             default => throw new EspiaoNfeException(
                 "Erro na requisição: {$body}. Status: {$status}.",
-                $status
+                $status,
             ),
         };
     }
@@ -257,29 +258,29 @@ abstract class QueryBuilder
             $uri = $this->buildUri();
 
             if ($this->logRequests) {
-                Log::error('EspiaoNfe Query Request Failed', [
-                    'endpoint' => $uri,
-                    'status' => $status,
-                    'body' => $body,
+                Log::error("EspiaoNfe Query Request Failed", [
+                    "endpoint" => $uri,
+                    "status" => $status,
+                    "body" => $body,
                 ]);
             }
 
             match ($status) {
                 401, 403 => throw new AuthenticationException(
                     "Erro de autenticação na API EspiaoNfe. Status: {$status}. Resposta: {$body}",
-                    $status
+                    $status,
                 ),
                 404 => throw new NotFoundException(
                     "Recurso não encontrado na API EspiaoNfe. Status: {$status}. Resposta: {$body}",
-                    $status
+                    $status,
                 ),
                 422 => throw new ValidationException(
                     "Erro de validação na API EspiaoNfe. Status: {$status}. Resposta: {$body}",
-                    $status
+                    $status,
                 ),
                 default => throw new EspiaoNfeException(
                     "Erro na requisição: {$body}. Status: {$status}.",
-                    $status
+                    $status,
                 ),
             };
         }

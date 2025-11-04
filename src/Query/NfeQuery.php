@@ -26,7 +26,11 @@ class NfeQuery extends QueryBuilder
      */
     public function modelo(string $modelo): static
     {
-        Modelos::validar($modelo, [Modelos::NFE, Modelos::NFCE, Modelos::SAT], 'NF-e');
+        Modelos::validar(
+            $modelo,
+            [Modelos::NFE, Modelos::NFCE, Modelos::SAT],
+            "NF-e",
+        );
 
         return $this->where("modelo", $modelo);
     }

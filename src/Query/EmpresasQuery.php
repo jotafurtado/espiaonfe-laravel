@@ -11,7 +11,7 @@ class EmpresasQuery extends QueryBuilder
 
     public function __construct(PendingRequest $http)
     {
-        parent::__construct($http, '/v1-cloud/empresas');
+        parent::__construct($http, "/v1-cloud/empresas");
     }
 
     /**
@@ -22,6 +22,6 @@ class EmpresasQuery extends QueryBuilder
      */
     public function razaoSocial(string $razaoSocial): static
     {
-        return $this->where('razao_social', $razaoSocial);
+        return $this->where("razao_social", $razaoSocial);
     }
 }
